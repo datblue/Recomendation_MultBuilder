@@ -36,17 +36,23 @@ def process_content(video_df):
             des = u' '.join(des.split())
         except:
             des = name
+        if len(des) == 0:
+            des = name
         try:
             tag = unicode(row['tag'], encoding='utf-8')
             tag = unicodedata.normalize('NFKC', tag.strip())
             tag = u' '.join(tag.split())
         except:
             tag = name
-        text = u'\n'.join([name, des, tag]).lower()
-        text = text.replace(u'_', u'')
+        if len(tag) == 0:
+            tag = name
+        full_text = u'\n'.join([name, des, tag]).lower()
+        text = full_text.replace(u'_', u'')
         text = tokenizer.predict(text)
-        text = u' '.join(regexer.run_regex_training(text).split())
+        text = u' '.join(regexer.run_regex(text).split())
+        # text = text.replace(u'\n', u' ')
         if len(text) == 0:
+            print (full_text)
             continue
         contents.update({id:text})
     # print ('Number of contents: %d ' % (len(contents)))
@@ -84,8 +90,11 @@ def build_video_content(videoID_list_path):
         print record[0]
     print ('MERGING VIDEOID LIST WITH VIDEOS DATA ...')
     df = pd.merge(videos_df, ID_list_df, on='id')
+    print ('THERE ARE %d VIDEOS' % (df['id'].count()))
     print ('PROCESSING VIDEO CONTENTS ...')
     contents = process_content(df)
+    print ('BUILDING CONTENT FINISHED')
+    print ('THERE ARE %d CONTENTS' % (len(contents.items())))
     return contents
 
 if __name__ == '__main__':
@@ -93,3 +102,4 @@ if __name__ == '__main__':
     contents = build_video_content(videoID_list_path)
     for k,v in contents.items():
         print v
+

@@ -1,9 +1,7 @@
-import os
 from collections import Counter
 from io import open
 import sys
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 import config
 import utils
@@ -12,15 +10,17 @@ import utils
 class Mult_Builder:
     def __init__(self):
         self.vid_2_lda = []
-        self.vectorizer = TfidfVectorizer(max_df=config.MAX_DF, min_df=config.MIN_DF)
-        # self.vectorizer = TfidfVectorizer()
+
+    def build_vocab(self, contents):
+        vocab_set = set(u' '.join(contents.values()).split())
+        vocab = {}
+        for k, v in enumerate(vocab_set):
+            vocab.update({v: k})
+        return vocab
 
     def build_lda_content(self, contents):# contents is a dict {id: content}
         print ('BUILDING VOCAB ...')
-        self.vectorizer.fit(contents.values())
-        # self.vectorizer.fit(contents)
-        vocab = self.vectorizer.vocabulary_
-        sorted_vocab = sorted(vocab.iteritems(), key=lambda(k, v): (v, k))
+        vocab = self.build_vocab(contents)
         h_dict = utils.hierachy_dict(vocab)
         lda_contents = []
         print ('BUILDING LDA ...')
@@ -35,12 +35,14 @@ class Mult_Builder:
                 except:
                     continue
             if len(bow) == 0:
+                print content
                 continue
             num_unique_word = unicode(len(bow))
             bow.insert(0, num_unique_word)
             lda_contents.append(u' '.join(bow))
             self.vid_2_lda.append([(len(lda_contents)-1), i])
-        return lda_contents, sorted_vocab, self.vid_2_lda
+        print ('BUILDING LDA FINISHED, THERE ARE %d LDA' % (len(self.vid_2_lda)))
+        return lda_contents, vocab, self.vid_2_lda
 
     def run(self, contents, mult_path, map_path, vocab_path):
         self.lda_contents, self.vocab, self.vid_2_lda = self.build_lda_content(contents)
@@ -66,13 +68,5 @@ if __name__ == '__main__':
 
     contents = utils.build_video_content(videoID_list_path)
 
-    # contents_text = []
-    # for k, v in contents.items():
-    #     contents_text.append(v)
-    # with open('contents.txt', 'w') as fw:
-    #     text = u'\n'.join(contents_text)
-    #     fw.write(text)
-
-    print ('BUILDING CONTENT FINISHED')
     mb = Mult_Builder()
     mb.run(contents, mult_path, map_path, vocab_path)

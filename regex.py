@@ -19,26 +19,41 @@ class regex:
         self.normalize_special_mark = re.compile(u'(?P<special_mark>[\.,\(\)\[\]\{\};!?:“”\"\'/\<\>])')
         self.detect_special_mark = re.compile(u'[\(\)\[\]\{\}\<\>“”\"\']')
         self.detect_special_mark2 = re.compile(u'[\.;!?:,]')
-        # self.detect_special_mark3 = re.compile(u'[/\-$%–@#^&*+=]')
-        self.detect_special_mark3 = re.compile(u'[/\$%–@#^&*+=]')
+        self.detect_special_mark3 = re.compile(u'[/\-$%–@#^&*+=]')
         # detect non-vietnamese words
         self.detect_non_vnese = self.detect_non_vietnamese()
 
-
-    def run_regex_training(self, data):
+    def run_regex(self, data):
         s = self.detect_num.sub(u'1', data) # replaced number to 1
-        s = self.detect_url.sub(u'', s)
-        s = self.detect_url2.sub(u'', s)
-        s = self.detect_email.sub(u'', s)
-        s = self.detect_datetime.sub(u'', s)
+        s = self.detect_url.sub(u'2', s)
+        s = self.detect_url2.sub(u'0', s)
+        s = self.detect_email.sub(u'3', s)
+        s = self.detect_datetime.sub(u'4', s)
         s = self.change_to_space.sub(u' ', s)
         s = self.rm_except_chars.sub(u'', s)
         # s = self.detect_all_caps(u'6', s)
         # s = self.detect_non_vnese.sub(u'5', s)
         s = self.normalize_special_mark.sub(u' \g<special_mark> ', s)
-        s = self.detect_special_mark.sub(u'', s)
-        s = self.detect_special_mark2.sub(u'', s)
-        s = self.detect_special_mark3.sub(u'', s)
+        s = self.detect_special_mark.sub(u'7', s)
+        s = self.detect_special_mark2.sub(u'8', s)
+        s = self.detect_special_mark3.sub(u'9', s)
+        s = self.normalize_space.sub(u' ', s)
+        return s.strip()
+
+    def run_regex_training(self, data):
+        s = self.detect_num.sub(u'1', data) # replaced number to 1
+        s = self.detect_url.sub(u'2', s)
+        s = self.detect_url2.sub(u'0', s)
+        s = self.detect_email.sub(u'3', s)
+        s = self.detect_datetime.sub(u'4', s)
+        s = self.change_to_space.sub(u' ', s)
+        s = self.rm_except_chars.sub(u'', s)
+        s = self.detect_all_caps(u'6', s)
+        # s = self.detect_non_vnese.sub(u'5', s)
+        s = self.normalize_special_mark.sub(u' \g<special_mark> ', s)
+        s = self.detect_special_mark.sub(u'7', s)
+        s = self.detect_special_mark2.sub(u'8', s)
+        s = self.detect_special_mark3.sub(u'9', s)
         s = self.normalize_space.sub(u' ', s)
         return s.strip()
 
@@ -56,20 +71,22 @@ class regex:
 
     def run_regex_predict(self, query):
         s, number = self.replace(self.detect_num, u'1', query)
-        s, url = self.replace(self.detect_url, u'', s)
-        s, url2 = self.replace(self.detect_url2, u'', s)
-        s, email = self.replace(self.detect_email, u'', s)
-        s, datetime = self.replace(self.detect_datetime, u'', s)
+        s, url = self.replace(self.detect_url, u'2', s)
+        s, url2 = self.replace(self.detect_url2, u'0', s)
+        s, email = self.replace(self.detect_email, u'3', s)
+        s, datetime = self.replace(self.detect_datetime, u'4', s)
         s = self.change_to_space.sub(u' ', s)
         s = self.rm_except_chars.sub(u'', s)
-        # s, all_caps = self.detect_all_caps(u'6', s, predict_mode=True)
+        s, all_caps = self.detect_all_caps(u'6', s, predict_mode=True)
+        non_vnese = []
         # s, non_vnese = self.replace(self.detect_non_vnese, u'5', s)
-        s = self.normalize_special_mark.sub(u'', s)
-        s, mark = self.replace(self.detect_special_mark, u'', s)
-        s, mark2 = self.replace(self.detect_special_mark2, u'', s)
-        s, mark3 = self.replace(self.detect_special_mark3, u'', s)
+        s = self.normalize_special_mark.sub(u' \g<special_mark> ', s)
+        s, mark = self.replace(self.detect_special_mark, u'7', s)
+        s, mark2 = self.replace(self.detect_special_mark2, u'8', s)
+        s, mark3 = self.replace(self.detect_special_mark3, u'9', s)
         s = self.normalize_space.sub(u' ', s)
-        return s.strip()
+        return s.strip(), number, url, url2, email, datetime, \
+               non_vnese, all_caps, mark, mark2, mark3
 
 
     def detect_non_vietnamese(self):
@@ -134,6 +151,6 @@ class regex:
 
 if __name__ == '__main__':
     r = regex()
-    s = u'ngày 25.12.2018'
-    ss = r.detect_datetime.sub(u'datetime', s)
+    s = u'bền k56k năm'
+    ss = r.detect_num.sub(u'1', s)
     print ss
