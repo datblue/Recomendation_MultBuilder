@@ -1,13 +1,15 @@
 import psycopg2
 import unicodedata
 
+from pycparser.c_ast import ID
+
 import config
 import pandas as pd
 from regex import regex
-#from tokenizer.tokenizer import Tokenizer
+# from tokenizer.tokenizer import Tokenizer
 
 regexer = regex()
-#tokenizer = Tokenizer()
+# tokenizer = Tokenizer()
 
 def hierachy_dict(corpus):
     eng_vocab = {}
@@ -48,13 +50,13 @@ def process_content(video_df):
             tag = name
         full_text = u'\n'.join([name, des, tag]).lower()
         text = full_text.replace(u'_', u'')
-        #text = tokenizer.predict(text)
+        # text = tokenizer.predict(text)
         text = u' '.join(regexer.run_regex(text).split())
         # text = text.replace(u'\n', u' ')
         if len(text) == 0:
             print (full_text)
             continue
-        contents.update({id:text})
+        contents.update({id: text})
     # print ('Number of contents: %d ' % (len(contents)))
     return contents
 
@@ -73,6 +75,7 @@ def build_video_content(videoID_list_path):
     print ('START BUILDING VIDEO CONTENTS')
     ID_list_df = pd.read_csv(videoID_list_path, header=None)
     ID_list_df.columns = ['id']
+    print ('THERE ARE %d VIDEOS IN VIDEO LIST' % (ID_list_df['id'].count()))
 
     cursor = connect_db()
     # posgreSQL_query = 'SELECT id, name, description, tag FROM video_full WHERE id IN (2173837, 00000)'
@@ -86,15 +89,16 @@ def build_video_content(videoID_list_path):
 
     videos_df = pd.DataFrame(videos, columns=['id', 'name', 'description', 'tag'])
 
-    for record in cursor.fetchall():
-        print record[0]
+    # for record in cursor.fetchall():
+    #     print record[0]
+
     print ('MERGING VIDEOID LIST WITH VIDEOS DATA ...')
     df = pd.merge(videos_df, ID_list_df, on='id')
-    print ('THERE ARE %d VIDEOS' % (df['id'].count()))
+    print ('THERE ARE %d VIDEOS IN VIDEO LIST EXIST IN DATABASE' % (df['id'].count()))
     print ('PROCESSING VIDEO CONTENTS ...')
     contents = process_content(df)
     print ('BUILDING CONTENT FINISHED')
-    print ('THERE ARE %d CONTENTS' % (len(contents.items())))
+    print ('THERE ARE %d VIDEOS HAVE CONTENTS' % (len(contents.items())))
     return contents
 
 if __name__ == '__main__':
@@ -102,4 +106,3 @@ if __name__ == '__main__':
     contents = build_video_content(videoID_list_path)
     for k,v in contents.items():
         print v
-
