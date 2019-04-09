@@ -4,10 +4,10 @@ import unicodedata
 import config
 import pandas as pd
 from regex import regex
-from tokenizer.tokenizer import Tokenizer
+#from tokenizer.tokenizer import Tokenizer
 
 regexer = regex()
-tokenizer = Tokenizer()
+#tokenizer = Tokenizer()
 
 def hierachy_dict(corpus):
     eng_vocab = {}
@@ -48,7 +48,7 @@ def process_content(video_df):
             tag = name
         full_text = u'\n'.join([name, des, tag]).lower()
         text = full_text.replace(u'_', u'')
-        text = tokenizer.predict(text)
+        #text = tokenizer.predict(text)
         text = u' '.join(regexer.run_regex(text).split())
         # text = text.replace(u'\n', u' ')
         if len(text) == 0:
