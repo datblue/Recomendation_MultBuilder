@@ -50,9 +50,14 @@ class Mult_Builder:
         lda_contents = u'\n'.join(self.lda_contents)
         with open(mult_path, 'w') as fw:
             fw.write(lda_contents)
+
+        vocab_list = []
+        for w, idx in self.vocab.items():
+            vocab_list.append(w)
+        vocab_txt = u'\n'.join(vocab_list)
         with open(vocab_path, 'w', encoding='utf-8') as fw:
-            for w in self.vocab:
-                fw.write(w[0] + '\n')
+            fw.write(vocab_txt)
+
         df = pd.DataFrame(self.vid_2_lda, columns=['id', 'video_id'])
         df.to_csv(map_path, index=False)
 
@@ -65,8 +70,6 @@ if __name__ == '__main__':
     mult_path = sys.argv[2]
     map_path = sys.argv[3]
     vocab_path = sys.argv[4]
-
     contents = utils.build_video_content(videoID_list_path)
-
     mb = Mult_Builder()
     mb.run(contents, mult_path, map_path, vocab_path)
